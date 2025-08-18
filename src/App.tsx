@@ -60,6 +60,7 @@ function App() {
         content: text,
         timestamp: new Date()
       };
+      console.log(anthropic.parseResponse(text));
       
       setChatMessages(prev => [...prev, assistantMessage]);
       console.log(text);
