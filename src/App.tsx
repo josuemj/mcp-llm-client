@@ -1,5 +1,6 @@
 import "./App.css";
 import AnthropicService from "./lib/antrophic";
+import MarkdownRenderer from "./components/MarkdownRenderer";
 import {useState} from "react";
 
 const anthropic = new AnthropicService();
@@ -24,6 +25,7 @@ function App() {
         ? result.content[0].text 
         : 'No text response';
       setResponse(text);
+      console.log(text)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -32,14 +34,15 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>Anthropic</h1>
+    <div className="app-container">
+      <h1>Anthropic Chat</h1>
       
-      <div>
+      <div className="input-section">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Ask something..."
           disabled={loading}
         />
@@ -49,15 +52,15 @@ function App() {
       </div>
 
       {error && (
-        <div>
+        <div className="error-message">
           <strong>Error:</strong> {error}
         </div>
       )}
 
       {response && (
-        <div>
+        <div className="response-section">
           <strong>Response:</strong>
-          <p>{response}</p>
+          <MarkdownRenderer content={response} />
         </div>
       )}
     </div>
