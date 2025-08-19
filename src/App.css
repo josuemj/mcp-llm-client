@@ -1,5 +1,4 @@
 .app-container {
-  max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
   font-family: Arial, sans-serif;
@@ -110,4 +109,14 @@
   padding: 1rem;
   border-radius: 4px;
   border: 1px solid #dee2e6;
+}
+
+.llm-wrapper {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  display: flex;
+  gap: 1rem;
+  width: 100%;
 }

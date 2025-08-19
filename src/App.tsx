@@ -1,71 +1,83 @@
 import "./App.css";
 import AnthropicService from "./lib/antrophic";
 import ChatHistory from "./components/ChatHistory";
-import {useState} from "react";
+import { useState } from "react";
 import bigText from "./test/reponsetest";
+import ChainOfThoughtsRender from "./components/ChainOfThoughts";
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
+export interface ChatMessage {
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
+}
+
+export interface ChainOfThought {
+  question: string;
+  content: string;
 }
 
 const anthropic = new AnthropicService();
 
 function App() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chainOfThoughts, setChainOfThoughts] = useState<ChainOfThought[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [test, setTest] = useState(false);
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    
+
     // Add user message to chat
     const userMessage: ChatMessage = {
-      role: 'user',
+      role: "user",
       content: input,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    
-    setChatMessages(prev => [...prev, userMessage]);
+
+    setChatMessages((prev) => [...prev, userMessage]);
     setLoading(true);
-    setError('');
+    setError("");
     const currentInput = input;
-    setInput(''); // Clear input immediately
+    setInput(""); // Clear input immediately
 
     if (test) {
       console.log("Testing");
       const assistantMessage: ChatMessage = {
-        role: 'assistant',
+        role: "assistant",
         content: bigText,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setChatMessages(prev => [...prev, assistantMessage]);
+      setChatMessages((prev) => [...prev, assistantMessage]);
       setLoading(false);
       return;
     }
-    
+
     try {
       console.log("Sending real message");
       const result = await anthropic.sendMessage(currentInput);
       // Extract text from response
-      const text = result.content[0].type === 'text' 
-        ? result.content[0].text 
-        : 'No text response';
-      
+      const text =
+        result.content[0].type === "text"
+          ? result.content[0].text
+          : "No text response";
+
       const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: text,
-        timestamp: new Date()
+        role: "assistant",
+        content: anthropic.parseResponse(text).answer,
+        timestamp: new Date(),
       };
-      console.log(anthropic.parseResponse(text));
-      
-      setChatMessages(prev => [...prev, assistantMessage]);
-      console.log(text);
+
+      const chainOfThought: ChainOfThought = {
+        question: currentInput,
+        content: anthropic.parseResponse(text).thinking,
+      };
+
+      setChainOfThoughts((prev) => [...prev, chainOfThought]);
+      setChatMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -81,33 +93,38 @@ function App() {
       <div className="header">
         <h1>Anthropic Chat</h1>
         <div className="header-buttons">
-          <button 
-            onClick={() => setTest(!test)} 
-            className={`test-button ${test ? 'test-mode' : 'real-mode'}`}
+          <button
+            onClick={() => setTest(!test)}
+            className={`test-button ${test ? "test-mode" : "real-mode"}`}
           >
-            {test ? 'Test Mode' : 'Real Mode'}
+            {test ? "Test Mode" : "Real Mode"}
           </button>
           <button onClick={clearChat} className="clear-button">
             Clear Chat
           </button>
         </div>
       </div>
-      
+
       {chatMessages.length > 0 && (
-        <ChatHistory messages={chatMessages} />
+        <>
+          <div className="llm-wrapper">
+            <ChatHistory messages={chatMessages} />
+            <ChainOfThoughtsRender chainOfThoughts={chainOfThoughts} />
+          </div>
+        </>
       )}
-      
+
       <div className="input-section">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Ask something..."
           disabled={loading}
         />
         <button onClick={handleSend} disabled={loading || !input.trim()}>
-          {loading ? 'Sending...' : 'Send'}
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
 
