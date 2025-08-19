@@ -1,7 +1,206 @@
 .cot-content {
-  overflow: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
+}
+
+.cot-header {
   padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #e9ecef;
+  border-radius: 10px 10px 0 0;
+}
+
+.cot-header h3 {
+  margin: 0 0 0.25rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.cot-subtitle {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.cot-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.cot-message-group {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cot-message-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Question styling - similar to user messages */
+.cot-question {
+  align-self: flex-end;
+  max-width: 85%;
+  background-color: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-left: 4px solid #2196f3;
+  border-radius: 12px 12px 4px 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cot-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.cot-question .cot-label {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 0.85rem;
+  background-color: #bbdefb;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+}
+
+.cot-question-content {
+  color: #1565c0;
+}
+
+.cot-question-content p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Thinking styling - similar to assistant messages */
+.cot-thinking {
+  align-self: flex-start;
+  max-width: 85%;
+  background-color: #f3e5f5;
+  border: 1px solid #9c27b0;
+  border-left: 4px solid #9c27b0;
+  border-radius: 12px 12px 12px 4px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cot-thinking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.cot-thinking .cot-label {
+  font-weight: 600;
+  color: #7b1fa2;
+  font-size: 0.85rem;
+  background-color: #e1bee7;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+}
+
+.cot-thinking-icon {
+  font-size: 1.2rem;
+}
+
+.cot-thinking-content {
+  color: #6a1b9a;
+}
+
+.cot-thinking-content p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.cot-thinking-content h1,
+.cot-thinking-content h2,
+.cot-thinking-content h3,
+.cot-thinking-content h4,
+.cot-thinking-content h5,
+.cot-thinking-content h6 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #4a148c;
+}
+
+.cot-thinking-content ul,
+.cot-thinking-content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.cot-thinking-content code {
+  background-color: #fce4ec;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.cot-thinking-content pre {
+  background-color: #fce4ec;
+  padding: 0.8rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.cot-timestamp {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.cot-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+}
+
+.cot-empty p {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* Scroll styling */
+.cot-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cot-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.cot-messages::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.cot-messages::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .cot-question,
+  .cot-thinking {
+    max-width: 95%;
+  }
+  
+  .cot-header {
+    padding: 0.8rem;
+  }
+  
+  .cot-messages {
+    padding: 0.8rem;
+  }
 }
