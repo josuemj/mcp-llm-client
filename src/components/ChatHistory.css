@@ -1,7 +1,5 @@
 .chat-history {
-  max-height: 500px;
   overflow-y: auto;
-  margin-bottom: 2rem;
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 1rem;

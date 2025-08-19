@@ -1,0 +1,7 @@
+.cot-content {
+  overflow: auto;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+}

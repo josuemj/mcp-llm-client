@@ -1,5 +1,5 @@
 import ReactMarkdown from 'react-markdown';
-import './MarkdownRenderer.css';
+import './ChainOfThoughts.css';
 import type { ChainOfThought } from '../App';
     
 interface chainOfThoughtsProps {
