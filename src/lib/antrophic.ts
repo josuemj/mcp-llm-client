@@ -33,7 +33,7 @@ class AnthropicService {
     }
   }
 
-  async sendMessage(content: string): Promise<Message> {
+  async sendMessage(content: string): Promise<{ message: Message; toolResults?: any[] }> {
     const tools = await this.getAllTools();
 
     // Preparar el contenido con chain of thought si está habilitado
@@ -70,11 +70,14 @@ class AnthropicService {
       ),
     });
 
+    let toolResults: any[] = [];
+    let message: Message;
+
     if (response.content.some((content) => content.type === "tool_use")) {
-      const toolResults = await this.handleToolCalls(response);
+      toolResults = await this.handleToolCalls(response);
 
       // Continuar conversación con resultados de tools
-      const followUpResponse = await this.client.messages.create({
+      message = await this.client.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 2000,
         messages: [
@@ -91,8 +94,8 @@ class AnthropicService {
           },
         ],
       });
-
-      return followUpResponse;
+    } else {
+      message = response;
     }
 
     // Guardar en el historial:
@@ -107,7 +110,7 @@ class AnthropicService {
       });
     }
 
-    return response;
+    return { message, toolResults };
   }
 
   private async handleToolCalls(response: Message) {
@@ -115,30 +118,31 @@ class AnthropicService {
 
     for (const content of response.content) {
       if (content.type === "tool_use") {
+        const mcpRequest = {
+          tool: content.name,
+          arguments: content.input || {},
+        };
         try {
-          console.log(` Calling tool: ${content.name}`, content.input);
-
           // Llamar al backend bridge
-          const response = await fetch(`${this.backendUrl}/api/mcp/call`, {
+          const res = await fetch(`${this.backendUrl}/api/mcp/call`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              tool: content.name,
-              arguments: content.input || {},
-            }),
+            body: JSON.stringify(mcpRequest),
           });
 
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
           }
 
-          const result = await response.json();
+          const mcpResponse = await res.json();
 
           toolResults.push({
             tool_use_id: content.id,
-            content: JSON.stringify(result),
+            request: mcpRequest,
+            response: mcpResponse,
+            content: JSON.stringify(mcpResponse),
           });
         } catch (error) {
           let errorMessage = "Unknown error";
@@ -146,10 +150,10 @@ class AnthropicService {
             errorMessage = error.message;
           }
 
-          console.error(` Tool call failed:`, errorMessage);
-
           toolResults.push({
             tool_use_id: content.id,
+            request: mcpRequest,
+            response: null,
             content: `Error: ${errorMessage}`,
             is_error: true,
           });

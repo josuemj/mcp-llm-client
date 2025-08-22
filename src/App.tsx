@@ -14,6 +14,8 @@ export interface ChatMessage {
 export interface ChainOfThought {
   question: string;
   content: string;
+  mcpRequest?: any;
+  mcpResponse?: any;
 }
 
 const anthropic = new AnthropicService();
@@ -56,12 +58,18 @@ function App() {
 
     try {
       console.log("Sending real message");
-      const result = await anthropic.sendMessage(currentInput);
-      // Extract text from response
+      const { message, toolResults } = await anthropic.sendMessage(currentInput);
       const text =
-        result.content[0].type === "text"
-          ? result.content[0].text
+        message.content[0].type === "text"
+          ? message.content[0].text
           : "No text response";
+
+      // Extraer MCP si existe
+      let mcpRequest, mcpResponse;
+      if (toolResults && toolResults.length > 0) {
+        mcpRequest = toolResults[0].request;
+        mcpResponse = toolResults[0].response;
+      }
 
       const assistantMessage: ChatMessage = {
         role: "assistant",
@@ -72,6 +80,8 @@ function App() {
       const chainOfThought: ChainOfThought = {
         question: currentInput,
         content: anthropic.parseResponse(text).thinking,
+        mcpRequest,
+        mcpResponse,
       };
 
       setChainOfThoughts((prev) => [...prev, chainOfThought]);

@@ -35,6 +35,18 @@ const chainOfThoughtsRender = ({ chainOfThoughts }: chainOfThoughtsProps) => {
               </div>
               <div className="cot-thinking-content">
                 <ReactMarkdown>{thought.content}</ReactMarkdown>
+                {thought.mcpRequest && (
+                  <div className="cot-mcp">
+                    <div>
+                      <strong>MCP Request:</strong>
+                      <pre>{JSON.stringify(thought.mcpRequest, null, 2)}</pre>
+                    </div>
+                    <div>
+                      <strong>MCP Response:</strong>
+                      <pre>{JSON.stringify(thought.mcpResponse, null, 2)}</pre>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
