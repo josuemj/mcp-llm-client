@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { MCPBridge } from "./mcpBridge.js";
-import dotenv from 'dotenv';
-dotenv.config();
+
+
 
 const app = express();
 const mcpBridge = new MCPBridge();

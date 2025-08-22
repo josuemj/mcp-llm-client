@@ -1,9 +1,16 @@
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 export interface MCPConfig {
   name: string;
   command: string;
   args: string[];
   env?: Record<string, string>;
 }
+
+
 
 export const MCP_CONFIGS: MCPConfig[] = [
   {
