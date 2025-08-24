@@ -30,5 +30,10 @@ export const MCP_CONFIGS: MCPConfig[] = [
       "ghcr.io/github/github-mcp-server",
       "stdio"
     ]
+  },
+  {
+    name: "warframe-market",
+    command: "node",
+    args: ["C:/Users/josue/uvg/Semestre 8/Redes/mwf-mcp/dist/index.js"]
   }
 ];
