@@ -35,5 +35,10 @@ export const MCP_CONFIGS: MCPConfig[] = [
     name: "warframe-market",
     command: "node",
     args: ["C:/Users/josue/uvg/Semestre 8/Redes/mwf-mcp/dist/index.js"]
+  },
+  {
+    name: "worldle-solver",
+    command: "C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/.venv/Scripts/python.exe",
+    args: ["C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/server.py"]
   }
 ];
