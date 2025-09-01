@@ -16,7 +16,7 @@ export const MCP_CONFIGS: MCPConfig[] = [
   {
     name: "spotify",
     command: "python",
-    args: ["C:/Users/josue/uvg/Semestre 8/Redes/spotify-mcp/src/spotify_mcp.py"],
+    args: ["C:/Users/josue/OneDrive/Escritorio/spotify-mcp/src/spotify_mcp.py"],
   },
   {
     name: "github",
@@ -37,8 +37,16 @@ export const MCP_CONFIGS: MCPConfig[] = [
     args: ["C:/Users/josue/uvg/Semestre 8/Redes/mwf-mcp/dist/index.js"]
   },
   {
-    name: "worldle-solver",
+    name: "personal_trainer",
     command: "C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/.venv/Scripts/python.exe",
     args: ["C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/server.py"]
+  },
+  {
+    name: "countries-info",
+    command: "npx",
+    args: [
+      "mcp-remote",
+      "https://remote-mcp-server-authless.josuemj456.workers.dev/sse"
+    ]
   }
 ];
