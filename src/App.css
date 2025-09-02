@@ -24,6 +24,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
+  animation: slideInFromTop 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header h1 {
@@ -110,15 +111,17 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .input-section.centered {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.1);
   width: 90%;
   max-width: 800px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .input-section input {
@@ -217,6 +220,7 @@
   backdrop-filter: blur(15px);
   position: relative;
   overflow: hidden;
+  animation: expandIn 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .llm-wrapper::before {
@@ -245,4 +249,54 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Smooth transition animations */
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes expandIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced centered state with glow effect */
+.input-section.centered:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.25), 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 0 50px rgba(83, 113, 247, 0.3);
+}
+
+/* Smooth appearance for error messages */
+.error-message {
+  animation: fadeInUp 0.4s ease-out;
 }
