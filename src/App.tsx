@@ -102,17 +102,6 @@ function App() {
     <div className="app-container">
       <div className="header">
         <h1>Anthropic Chat</h1>
-        <div className="header-buttons">
-          <button
-            onClick={() => setTest(!test)}
-            className={`test-button ${test ? "test-mode" : "real-mode"}`}
-          >
-            {test ? "Test Mode" : "Real Mode"}
-          </button>
-          <button onClick={clearChat} className="clear-button">
-            Clear Chat
-          </button>
-        </div>
       </div>
 
       {chatMessages.length > 0 && (
@@ -124,7 +113,7 @@ function App() {
         </>
       )}
 
-      <div className="input-section">
+      <div className={`input-section ${chatMessages.length === 0 ? "centered" : ""}`}>
         <input
           type="text"
           value={input}
@@ -136,6 +125,11 @@ function App() {
         <button onClick={handleSend} disabled={loading || !input.trim()}>
           {loading ? "Sending..." : "Send"}
         </button>
+        {chatMessages.length > 0 && (
+          <button onClick={clearChat} className="clear-button">
+            Clear Chat
+          </button>
+        )}
       </div>
 
       {error && (
