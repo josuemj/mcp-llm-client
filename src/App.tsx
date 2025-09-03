@@ -216,22 +216,24 @@ function App() {
               </button>
             </div>
             <div className="modal-body">
-              {selectedMCP.tools.map((tool: any, index: number) => (
-                <div key={index} className="tool-item">
-                  <div className="tool-header">
-                    <h3 className="tool-name">{tool.name}</h3>
-                  </div>
-                  <p className="tool-description">{tool.description}</p>
-                  {tool.inputSchema && (
-                    <div className="tool-schema">
-                      <h4>Input Schema:</h4>
-                      <pre className="schema-json">
-                        {JSON.stringify(tool.inputSchema, null, 2)}
-                      </pre>
+              <div className="modal-body-content">
+                {selectedMCP.tools.map((tool: any, index: number) => (
+                  <div key={index} className="tool-item">
+                    <div className="tool-header">
+                      <h3 className="tool-name">{tool.name}</h3>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <p className="tool-description">{tool.description}</p>
+                    {tool.inputSchema && (
+                      <div className="tool-schema">
+                        <h4>Input Schema:</h4>
+                        <pre className="schema-json">
+                          {JSON.stringify(tool.inputSchema, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
