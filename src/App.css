@@ -15,7 +15,7 @@
 
 .header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   background: rgba(255, 255, 255, 0.95);
   padding: 1rem 1.5rem;
@@ -299,4 +299,228 @@
 /* Smooth appearance for error messages */
 .error-message {
   animation: fadeInUp 0.4s ease-out;
+}
+
+/* MCP Dropdown Styles */
+.mcp-dropdown-wrapper {
+  position: relative;
+}
+
+.mcp-dropdown-trigger {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mcp-dropdown-trigger:hover {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-arrow {
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.mcp-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  border-radius: 12px;
+  padding: 0.5rem;
+  min-width: 200px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.mcp-item {
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.mcp-item:last-child {
+  margin-bottom: 0;
+}
+
+.mcp-item:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.mcp-item.disabled {
+  color: #666;
+  cursor: not-allowed;
+}
+
+.mcp-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.mcp-tool-count {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%);
+  border-radius: 16px;
+  padding: 0;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 12px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: scaleIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  color: white;
+}
+
+.tool-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tool-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.tool-item:last-child {
+  margin-bottom: 0;
+}
+
+.tool-header {
+  margin-bottom: 0.75rem;
+}
+
+.tool-name {
+  margin: 0;
+  color: #4ade80;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.tool-description {
+  color: #e5e7eb;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.tool-schema h4 {
+  color: #fbbf24;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.schema-json {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #d1d5db;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+}
+
+/* Additional animations */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
