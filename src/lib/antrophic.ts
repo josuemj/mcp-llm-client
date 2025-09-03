@@ -157,6 +157,8 @@ class AnthropicService {
 
         // Ejecutar tools si hay
         let toolResults: any[] = [];
+        let finalResponseContent = fullResponse;
+        
         if (pendingToolCalls.length > 0) {
           toolResults = await this.handleToolCalls(message, callbacks);
           
@@ -173,11 +175,16 @@ class AnthropicService {
                   type: "tool_result",
                   tool_use_id: result.tool_use_id,
                   content: result.content,
-                  is_error: result.is_error,
+                  is_error: result.is_error || false,
                 })),
               },
             ],
           });
+
+          // Use final message content for tools response
+          finalResponseContent = typeof finalMessage.content === 'string' 
+            ? finalMessage.content 
+            : finalMessage.content.map(c => c.type === 'text' ? c.text : '').join('');
 
           resolve({ message: finalMessage, toolResults });
         } else {
@@ -188,10 +195,10 @@ class AnthropicService {
         this.conversationHistory.push({ role: "user", content });
         this.conversationHistory.push({
           role: "assistant",
-          content: fullResponse,
+          content: finalResponseContent,
         });
 
-        callbacks.onComplete?.(fullResponse);
+        callbacks.onComplete?.(finalResponseContent);
 
       } catch (error) {
         reject(error);
@@ -229,7 +236,7 @@ class AnthropicService {
             tool_use_id: content.id,
             request: mcpRequest,
             response: mcpResponse,
-            content: JSON.stringify(mcpResponse),
+            content: mcpResponse.content?.[0]?.text || JSON.stringify(mcpResponse),
           });
         } catch (error) {
           let errorMessage = "Unknown error";

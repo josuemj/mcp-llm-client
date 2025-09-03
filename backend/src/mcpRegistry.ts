@@ -40,7 +40,7 @@ export const MCP_CONFIGS: MCPConfig[] = [
     name: "personal_trainer",
     command: "C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/.venv/Scripts/python.exe",
     args: ["C:/Users/josue/uvg/Semestre 8/Redes/chatbot-server/server.py"]
-  },
+  },  
   {
     name: "countries-info",
     command: "npx",
@@ -48,5 +48,14 @@ export const MCP_CONFIGS: MCPConfig[] = [
       "mcp-remote",
       "https://remote-mcp-server-authless.josuemj456.workers.dev/sse"
     ]
-  }
+  },
+  {
+    name: "filesystem",
+    command: "npx",
+    args: [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "C:\\Users\\josue"
+    ]
+    }
 ];
