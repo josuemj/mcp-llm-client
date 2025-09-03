@@ -2,13 +2,17 @@ import ReactMarkdown from 'react-markdown';
 import './ChainOfThoughts.css';
 import type { ChainOfThought } from '../App';
     
-interface chainOfThoughtsProps {
+interface ChainOfThoughtsRenderProps {
   chainOfThoughts: ChainOfThought[];
 }
 
-const chainOfThoughtsRender = ({ chainOfThoughts }: chainOfThoughtsProps) => {
+const ChainOfThoughtsRender: React.FC<ChainOfThoughtsRenderProps> = ({
+  chainOfThoughts,
+}) => {
+  if (chainOfThoughts.length === 0) return null;
+
   return (
-    <div className="cot-content">
+    <div className="chain-of-thoughts">
       <div className="cot-header">
         <h3>Chain of Thoughts</h3>
         <span className="cot-subtitle">Internal reasoning process</span>
@@ -62,4 +66,4 @@ const chainOfThoughtsRender = ({ chainOfThoughts }: chainOfThoughtsProps) => {
   );
 };
 
-export default chainOfThoughtsRender;
+export default ChainOfThoughtsRender;

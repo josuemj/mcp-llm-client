@@ -9,6 +9,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 }
 
 export interface ChainOfThought {
@@ -16,6 +17,7 @@ export interface ChainOfThought {
   content: string;
   mcpRequest?: any;
   mcpResponse?: any;
+  isStreaming?: boolean;
 }
 
 const anthropic = new AnthropicService();
@@ -31,6 +33,11 @@ function App() {
   const [availableMCPs, setAvailableMCPs] = useState<any[]>([]);
   const [selectedMCP, setSelectedMCP] = useState<any>(null);
   const [showMCPModal, setShowMCPModal] = useState(false);
+  
+  // Estados para streaming
+  const [streamingThinking, setStreamingThinking] = useState("");
+  const [streamingAnswer, setStreamingAnswer] = useState("");
+  const [currentTools, setCurrentTools] = useState<string[]>([]);
 
   useEffect(() => {
     loadAvailableMCPs();
@@ -39,7 +46,6 @@ function App() {
   const loadAvailableMCPs = async () => {
     try {
       const tools = await anthropic.getAllTools();
-      // Group tools by server
       const mcpGroups: { [key: string]: any[] } = {};
       tools.forEach((tool: any) => {
         const serverName = tool._server || 'Unknown';
@@ -69,7 +75,6 @@ function App() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // Add user message to chat
     const userMessage: ChatMessage = {
       role: "user",
       content: input,
@@ -80,7 +85,12 @@ function App() {
     setLoading(true);
     setError("");
     const currentInput = input;
-    setInput(""); // Clear input immediately
+    setInput("");
+
+    // Reset streaming states
+    setStreamingThinking("");
+    setStreamingAnswer("");
+    setCurrentTools([]);
 
     if (test) {
       console.log("Testing");
@@ -94,38 +104,118 @@ function App() {
       return;
     }
 
+    // Crear mensaje de streaming inicial para el chat
+    const streamingMessage: ChatMessage = {
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+
+    // Crear chain of thought inicial
+    const streamingThought: ChainOfThought = {
+      question: currentInput,
+      content: "",
+      isStreaming: true,
+    };
+
+    // Agregar mensaje streaming al chat
+    setChatMessages((prev) => [...prev, streamingMessage]);
+    setChainOfThoughts((prev) => [...prev, streamingThought]);
+
+    const messageIndex = chatMessages.length + 1; // +1 porque acabamos de agregar user message
+    const thoughtIndex = chainOfThoughts.length;
+
     try {
-      console.log("Sending real message");
-      const { message, toolResults } = await anthropic.sendMessage(currentInput);
-      const text =
-        message.content[0].type === "text"
-          ? message.content[0].text
-          : "No text response";
+      console.log("Sending streaming message");
+      
+      const { message, toolResults } = await anthropic.sendMessageStream(currentInput, {
+        onThinking: (thinking) => {
+          setStreamingThinking(thinking);
+          // Actualizar chain of thought en tiempo real
+          setChainOfThoughts((prev) => 
+            prev.map((thought, i) => 
+              i === thoughtIndex 
+                ? { ...thought, content: thinking, isStreaming: true }
+                : thought
+            )
+          );
+        },
+        
+        onAnswer: (answer) => {
+          setStreamingAnswer(answer);
+          // Actualizar mensaje del chat en tiempo real
+          setChatMessages((prev) => 
+            prev.map((msg, i) => 
+              i === messageIndex 
+                ? { ...msg, content: answer, isStreaming: true }
+                : msg
+            )
+          );
+        },
+        
+        onToolCall: (toolName, args) => {
+          console.log(`🔧 Tool called: ${toolName}`, args);
+          setCurrentTools((prev) => [...prev, `🔄 Executing: ${toolName}`]);
+        },
+        
+        onToolResult: (result) => {
+          console.log(`✅ Tool result received:`, result);
+          setCurrentTools((prev) => 
+            prev.map((tool, i) => 
+              i === prev.length - 1 
+                ? tool.replace('🔄 Executing:', '✅ Completed:')
+                : tool
+            )
+          );
+        },
+        
+        onComplete: (fullResponse) => {
+          console.log("Stream completed");
+          
+          const parsed = anthropic.parseResponse(fullResponse);
+          
+          // Finalizar mensaje del chat
+          setChatMessages((prev) => 
+            prev.map((msg, i) => 
+              i === messageIndex 
+                ? { 
+                    ...msg, 
+                    content: parsed.answer || streamingAnswer || "Response completed",
+                    isStreaming: false 
+                  }
+                : msg
+            )
+          );
 
-      // Extraer MCP si existe
-      let mcpRequest, mcpResponse;
-      if (toolResults && toolResults.length > 0) {
-        mcpRequest = toolResults[0].request;
-        mcpResponse = toolResults[0].response;
-      }
+          // Finalizar chain of thought
+          setChainOfThoughts((prev) => 
+            prev.map((thought, i) => 
+              i === thoughtIndex 
+                ? { 
+                    ...thought, 
+                    content: parsed.thinking || streamingThinking || "Thinking completed",
+                    mcpRequest: toolResults?.[0]?.request,
+                    mcpResponse: toolResults?.[0]?.response,
+                    isStreaming: false 
+                  }
+                : thought
+            )
+          );
 
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: anthropic.parseResponse(text).answer,
-        timestamp: new Date(),
-      };
+          // Limpiar estados de streaming
+          setStreamingThinking("");
+          setStreamingAnswer("");
+          setCurrentTools([]);
+        }
+      });
 
-      const chainOfThought: ChainOfThought = {
-        question: currentInput,
-        content: anthropic.parseResponse(text).thinking,
-        mcpRequest,
-        mcpResponse,
-      };
-
-      setChainOfThoughts((prev) => [...prev, chainOfThought]);
-      setChatMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      
+      // Remover mensajes de streaming en caso de error
+      setChatMessages((prev) => prev.slice(0, -1));
+      setChainOfThoughts((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
     }
@@ -133,6 +223,10 @@ function App() {
 
   const clearChat = () => {
     setChatMessages([]);
+    setChainOfThoughts([]);
+    setStreamingThinking("");
+    setStreamingAnswer("");
+    setCurrentTools([]);
     anthropic.clearConversation();
   };
 
@@ -169,6 +263,18 @@ function App() {
         </div>
       </div>
 
+      {/* Mostrar herramientas en ejecución */}
+      {currentTools.length > 0 && (
+        <div className="tools-executing">
+          <h4>🤖 MCP Tools:</h4>
+          {currentTools.map((tool, index) => (
+            <div key={index} className="tool-status">
+              {tool}
+            </div>
+          ))}
+        </div>
+      )}
+
       {chatMessages.length > 0 && (
         <>
           <div className="llm-wrapper">
@@ -188,7 +294,7 @@ function App() {
           disabled={loading}
         />
         <button onClick={handleSend} disabled={loading || !input.trim()}>
-          {loading ? "Sending..." : "Send"}
+          {loading ? "Thinking..." : "Send"}
         </button>
         {chatMessages.length > 0 && (
           <button onClick={clearChat} className="clear-button">

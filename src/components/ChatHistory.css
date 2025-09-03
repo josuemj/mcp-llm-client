@@ -1,65 +1,182 @@
 .chat-history {
+  flex: 1;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  max-height: 600px;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
-  background-color: #f8f9fa;
+}
+
+.chat-history h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
 }
 
 .message {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .message.user {
-  background-color: #e3f2fd;
+  background: #e3f2fd;
   border-left: 4px solid #2196f3;
-  margin-left: 2rem;
+  margin-left: 20px;
 }
 
 .message.assistant {
-  background-color: #f3e5f5;
-  border-left: 4px solid #9c27b0;
-  margin-right: 2rem;
+  background: #f8f9fa;
+  border-left: 4px solid #28a745;
+  margin-right: 20px;
+}
+
+.message.streaming {
+  background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+  border-left: 4px solid #007bff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { background: linear-gradient(45deg, #f8f9fa, #e9ecef); }
+  50% { background: linear-gradient(45deg, #e9ecef, #dee2e6); }
 }
 
 .message-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
 }
 
-.role {
+.message-role {
   font-weight: 600;
   color: #495057;
 }
 
-.message.user .role {
-  color: #1976d2;
-}
-
-.message.assistant .role {
-  color: #7b1fa2;
-}
-
-.timestamp {
+.message-timestamp {
   color: #6c757d;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .message-content {
-  line-height: 1.5;
+  line-height: 1.6;
+  color: #333;
+  position: relative;
 }
 
-.message-content p {
-  margin: 0;
-  word-wrap: break-word;
+.user-message {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a73e8;
+  font-weight: 500;
 }
 
-/* Scroll styling */
+.thinking-placeholder {
+  color: #6c757d;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typing-cursor {
+  animation: blink 1s infinite;
+  font-weight: bold;
+  color: #007bff;
+  margin-left: 4px;
+  font-size: 1.2em;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Estilos para markdown en mensajes de Claude */
+.message.assistant .markdown-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.message.assistant .markdown-content h1,
+.message.assistant .markdown-content h2,
+.message.assistant .markdown-content h3 {
+  color: #2c3e50;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.message.assistant .markdown-content p {
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+.message.assistant .markdown-content code {
+  background: #f1f3f4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.875em;
+  color: #d73a49;
+}
+
+.message.assistant .markdown-content pre {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.message.assistant .markdown-content pre code {
+  background: none;
+  padding: 0;
+  color: #24292e;
+}
+
+.message.assistant .markdown-content ul,
+.message.assistant .markdown-content ol {
+  margin-bottom: 12px;
+  padding-left: 24px;
+}
+
+.message.assistant .markdown-content li {
+  margin-bottom: 4px;
+}
+
+.message.assistant .markdown-content blockquote {
+  border-left: 4px solid #dee2e6;
+  margin: 16px 0;
+  padding-left: 16px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.message.assistant .markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.message.assistant .markdown-content th,
+.message.assistant .markdown-content td {
+  border: 1px solid #dee2e6;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.message.assistant .markdown-content th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Scrollbar personalizado */
 .chat-history::-webkit-scrollbar {
   width: 8px;
 }

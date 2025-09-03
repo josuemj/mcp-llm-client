@@ -5,11 +5,18 @@ import type {
   MessageParam,
 } from "@anthropic-ai/sdk/resources/messages";
 
+interface StreamCallback {
+  onThinking?: (thinking: string) => void;
+  onAnswer?: (answer: string) => void;
+  onComplete?: (fullResponse: string) => void;
+  onToolCall?: (toolName: string, args: any) => void;
+  onToolResult?: (result: any) => void;
+}
+
 class AnthropicService {
   private client: Anthropic;
   private conversationHistory: MessageParam[] = [];
   private backendUrl: string = import.meta.env.VITE_BACKEND_URL;
-
   private enableChainOfThought: boolean = true;
 
   constructor(apiKey?: string) {
@@ -33,10 +40,9 @@ class AnthropicService {
     }
   }
 
-  async sendMessage(content: string): Promise<{ message: Message; toolResults?: any[] }> {
+  async sendMessageStream(content: string, callbacks: StreamCallback): Promise<{ message: Message; toolResults?: any[] }> {
     const tools = await this.getAllTools();
 
-    // Preparar el contenido con chain of thought si está habilitado
     const enhancedContent = this.enableChainOfThought
       ? `Please think through this step-by-step before answering:
 
@@ -51,69 +57,149 @@ class AnthropicService {
       User question: ${content}`
       : content;
 
-    // Crear mensajes para enviar (con el último mensaje mejorado)
     const messagesToSend = [
       ...this.conversationHistory,
       { role: "user", content: enhancedContent } as MessageParam,
     ];
 
-    const response = await this.client.messages.create({
+    let fullResponse = "";
+    let currentThinking = "";
+    let currentAnswer = "";
+    let inThinking = false;
+    let inAnswer = false;
+    let pendingToolCalls: any[] = [];
+
+    const stream = await this.client.messages.stream({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 2000, // Aumentado para acomodar el chain of thought
+      max_tokens: 4000,
       messages: messagesToSend,
-      tools: tools.map(
-        (tool: { name: any; description: any; inputSchema: any }) => ({
-          name: tool.name,
-          description: tool.description,
-          input_schema: tool.inputSchema,
-        })
-      ),
+      tools: tools.map((tool: any) => ({
+        name: tool.name,
+        description: tool.description,
+        input_schema: tool.inputSchema,
+      })),
     });
 
-    let toolResults: any[] = [];
-    let message: Message;
+    return new Promise(async (resolve, reject) => {
+      try {
+        for await (const chunk of stream) {
+          if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+            const text = chunk.delta.text;
+            fullResponse += text;
 
-    if (response.content.some((content) => content.type === "tool_use")) {
-      toolResults = await this.handleToolCalls(response);
+            // Detectar inicio de thinking
+            if (text.includes('<thinking>')) {
+              inThinking = true;
+              const thinkingStart = text.indexOf('<thinking>') + 11;
+              if (thinkingStart < text.length) {
+                currentThinking += text.substring(thinkingStart);
+                callbacks.onThinking?.(currentThinking);
+              }
+              continue;
+            }
 
-      // Continuar conversación con resultados de tools
-      message = await this.client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
-        messages: [
-          ...messagesToSend,
-          { role: "assistant", content: response.content },
-          {
-            role: "user",
-            content: toolResults.map((result) => ({
-              type: "tool_result",
-              tool_use_id: result.tool_use_id,
-              content: result.content,
-              is_error: result.is_error,
-            })),
-          },
-        ],
-      });
-    } else {
-      message = response;
-    }
+            // Detectar fin de thinking
+            if (text.includes('</thinking>')) {
+              inThinking = false;
+              const thinkingEnd = text.indexOf('</thinking>');
+              if (thinkingEnd > 0) {
+                currentThinking += text.substring(0, thinkingEnd);
+                callbacks.onThinking?.(currentThinking);
+              }
+              continue;
+            }
 
-    // Guardar en el historial:
-    // - El mensaje original del usuario (sin el prompt de CoT)
-    // - La respuesta completa del asistente (con thinking y answer)
-    this.conversationHistory.push({ role: "user", content });
+            // Detectar inicio de answer
+            if (text.includes('<answer>')) {
+              inAnswer = true;
+              const answerStart = text.indexOf('<answer>') + 8;
+              if (answerStart < text.length) {
+                currentAnswer += text.substring(answerStart);
+                callbacks.onAnswer?.(currentAnswer);
+              }
+              continue;
+            }
 
-    if (response.content[0].type === "text") {
-      this.conversationHistory.push({
-        role: "assistant",
-        content: response.content[0].text,
-      });
-    }
+            // Detectar fin de answer
+            if (text.includes('</answer>')) {
+              inAnswer = false;
+              const answerEnd = text.indexOf('</answer>');
+              if (answerEnd > 0) {
+                currentAnswer += text.substring(0, answerEnd);
+                callbacks.onAnswer?.(currentAnswer);
+              }
+              continue;
+            }
 
-    return { message, toolResults };
+            // Streaming normal dentro de las secciones
+            if (inThinking) {
+              currentThinking += text;
+              callbacks.onThinking?.(currentThinking);
+            } else if (inAnswer) {
+              currentAnswer += text;
+              callbacks.onAnswer?.(currentAnswer);
+            } else if (!this.enableChainOfThought) {
+              // Si no hay chain of thought, stream directamente al answer
+              currentAnswer += text;
+              callbacks.onAnswer?.(currentAnswer);
+            }
+          }
+
+          // Detectar tool calls
+          if (chunk.type === 'content_block_start' && chunk.content_block.type === 'tool_use') {
+            const toolCall = chunk.content_block;
+            pendingToolCalls.push(toolCall);
+            callbacks.onToolCall?.(toolCall.name, toolCall.input);
+          }
+        }
+
+        const message = await stream.finalMessage();
+
+        // Ejecutar tools si hay
+        let toolResults: any[] = [];
+        if (pendingToolCalls.length > 0) {
+          toolResults = await this.handleToolCalls(message, callbacks);
+          
+          // Continuar conversación con resultados de tools
+          const finalMessage = await this.client.messages.create({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 4000,
+            messages: [
+              ...messagesToSend,
+              { role: "assistant", content: message.content },
+              {
+                role: "user",
+                content: toolResults.map((result) => ({
+                  type: "tool_result",
+                  tool_use_id: result.tool_use_id,
+                  content: result.content,
+                  is_error: result.is_error,
+                })),
+              },
+            ],
+          });
+
+          resolve({ message: finalMessage, toolResults });
+        } else {
+          resolve({ message, toolResults });
+        }
+
+        // Guardar en historial
+        this.conversationHistory.push({ role: "user", content });
+        this.conversationHistory.push({
+          role: "assistant",
+          content: fullResponse,
+        });
+
+        callbacks.onComplete?.(fullResponse);
+
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  private async handleToolCalls(response: Message) {
+  private async handleToolCalls(response: Message, callbacks?: StreamCallback) {
     const toolResults = [];
 
     for (const content of response.content) {
@@ -122,8 +208,8 @@ class AnthropicService {
           tool: content.name,
           arguments: content.input || {},
         };
+
         try {
-          // Llamar al backend bridge
           const res = await fetch(`${this.backendUrl}/api/mcp/call`, {
             method: "POST",
             headers: {
@@ -137,6 +223,7 @@ class AnthropicService {
           }
 
           const mcpResponse = await res.json();
+          callbacks?.onToolResult?.(mcpResponse);
 
           toolResults.push({
             tool_use_id: content.id,
@@ -150,18 +237,26 @@ class AnthropicService {
             errorMessage = error.message;
           }
 
-          toolResults.push({
+          const errorResult = {
             tool_use_id: content.id,
             request: mcpRequest,
             response: null,
             content: `Error: ${errorMessage}`,
             is_error: true,
-          });
+          };
+
+          callbacks?.onToolResult?.(errorResult);
+          toolResults.push(errorResult);
         }
       }
     }
 
     return toolResults;
+  }
+
+  // Método legacy para compatibilidad
+  async sendMessage(content: string): Promise<{ message: Message; toolResults?: any[] }> {
+    return this.sendMessageStream(content, {});
   }
 
   async checkBackendHealth() {
