@@ -130,10 +130,17 @@ The application will be available at `http://localhost:5173`
 ### MCP Servers
 Configure MCP servers in `backend/src/mcpRegistry.ts`. Currently includes:
 - Spotify MCP (Python script)
-- GitHub MCP (Docker container) 
+    - available at `https://github.com/josuemj/spotify-mcp`
+- GitHub MCP (Docker container)
+    - available at `https://github.com/github/github-mcp-server`
 - Warframe Market MCP (Node.js)
+    - available at `https://github.com/XavierLopez25/mwf-mcp`
 - Personal Trainer MCP (Python script)
+    - available at `https://github.com/xtsebas/chatbot-server`
 - Countries Info MCP (Remote server)
+    - available at `https://github.com/josuemj/remote-mcp-server-authless`
+- File System MCP (Node.js)
+    - available at `https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem`
 
 ### Environment Variables
 - `VITE_ANTHROPIC_API_KEY`: Your Anthropic API key for Claude access
